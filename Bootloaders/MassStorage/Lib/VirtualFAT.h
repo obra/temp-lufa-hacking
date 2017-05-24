@@ -34,14 +34,17 @@
 	/* Includes: */
 		#include <avr/io.h>
 		#include <avr/pgmspace.h>
+		#include <avr/boot.h>
+		#include <stdbool.h>
+
+		#include <LUFA/Common/Common.h>
 
 		#include <LUFA/Drivers/USB/USB.h>
 
-		#include "../BootloaderAPI.h"
 
 	/* Macros: */
 		/** Size of the virtual FLASH.BIN file in bytes. */
-		#define FLASH_FILE_SIZE_BYTES     (FLASHEND - (FLASHEND - BOOT_START_ADDR) - AUX_BOOT_SECTION_SIZE)
+		#define FLASH_FILE_SIZE_BYTES     (FLASHEND - (FLASHEND - BOOT_START_ADDR) )
 
 		/** Number of sectors that comprise a single logical disk cluster. */
 		#define SECTOR_PER_CLUSTER        4
@@ -269,18 +272,18 @@
 		#if defined(INCLUDE_FROM_VIRTUAL_FAT_C)
 			static void UpdateFAT12ClusterEntry(uint8_t* const FATTable,
 			                                    const uint16_t Index,
-			                                    const uint16_t ChainEntry) AUX_BOOT_SECTION;
+			                                    const uint16_t ChainEntry) ;
 
 			static void UpdateFAT12ClusterChain(uint8_t* const FATTable,
 			                                    const uint16_t StartIndex,
-			                                    const uint8_t ChainLength) AUX_BOOT_SECTION;
+			                                    const uint8_t ChainLength) ;
 
 			static void ReadWriteFLASHFileBlock(const uint16_t BlockNumber,
-			                                    uint8_t* BlockBuffer) AUX_BOOT_SECTION;
+			                                    uint8_t* BlockBuffer) ;
 
 		#endif
 
-		void VirtualFAT_WriteBlock(const uint16_t BlockNumber) AUX_BOOT_SECTION;
-		void VirtualFAT_ReadBlock(const uint16_t BlockNumber) AUX_BOOT_SECTION;
+		void VirtualFAT_WriteBlock(const uint16_t BlockNumber) ;
+		void VirtualFAT_ReadBlock(const uint16_t BlockNumber) ;
 
 #endif

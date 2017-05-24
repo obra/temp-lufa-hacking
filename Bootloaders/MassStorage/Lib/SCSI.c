@@ -275,8 +275,13 @@ static  bool SCSI_Command_ReadWrite_10(USB_ClassInfo_MS_Device_t* const MSInterf
 static  bool SCSI_Command_ModeSense_6(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo)
 {
 	/* Send an empty header response indicating Write Protect flag is off */
-	Endpoint_Write_32_LE(0);
-	Endpoint_ClearIN();
+	//Endpoint_Write_32_LE(0);
+	UEDATX =0;
+	UEDATX =0;
+	UEDATX =0;
+	UEDATX =0;
+        UEINTX &= ~(1 << TXINI);
+
 
 	/* Update the bytes transferred counter and succeed the command */
 	MSInterfaceInfo->State.CommandBlock.DataTransferLength -= 4;

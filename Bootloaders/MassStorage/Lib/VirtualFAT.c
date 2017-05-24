@@ -241,19 +241,28 @@ static void ReadWriteFLASHFileBlock(const uint16_t BlockNumber,
 			if ((FlashAddress % SPM_PAGESIZE) == 0)
 			{
 				/* Erase the given FLASH page, ready to be programmed */
-				BootloaderAPI_ErasePage(FlashAddress);
+				   //     boot_page_erase(FlashAddress);
+					        //boot_spm_busy_wait();
+        boot_page_erase(FlashAddress);
+	        boot_spm_busy_wait();
+
 			}
 
 			/* Write the next data word to the FLASH page */
-			BootloaderAPI_FillWord(FlashAddress, (BlockBuffer[i + 1] << 8) | BlockBuffer[i]);
+			        boot_page_fill_safe(FlashAddress, (BlockBuffer[i + 1] << 8) | BlockBuffer[i]);
 			FlashAddress += 2;
 
 			if ((FlashAddress % SPM_PAGESIZE) == 0)
 			{
 				/* Write the filled FLASH page to memory */
-				BootloaderAPI_WritePage(FlashAddress - SPM_PAGESIZE);
+				        boot_page_write(FlashAddress-SPM_PAGESIZE);
+					        boot_spm_busy_wait();
+
+					//        boot_spm_busy_wait();
+
 			}
 		}
+		boot_rww_enable();
 }
 
 

@@ -64,19 +64,19 @@
 		extern bool RunBootloader;
 
 	/* Function Prototypes: */
-		int main(void) AUX_BOOT_SECTION;
+		int main(void);
 
 		void Application_Jump_Check(void) ATTR_INIT_SECTION(3);
 
-		void EVENT_USB_Device_Connect(void) AUX_BOOT_SECTION;
-		void EVENT_USB_Device_Disconnect(void) AUX_BOOT_SECTION;
-		void EVENT_USB_Device_ConfigurationChanged(void) AUX_BOOT_SECTION;
-		void EVENT_USB_Device_ControlRequest(void) AUX_BOOT_SECTION;
+		void EVENT_USB_Device_Connect(void);
+		void EVENT_USB_Device_Disconnect(void);
+		void EVENT_USB_Device_ConfigurationChanged(void);
+		void EVENT_USB_Device_ControlRequest(void);
 
-		bool CALLBACK_MS_Device_SCSICommandReceived(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo) AUX_BOOT_SECTION;
+		bool CALLBACK_MS_Device_SCSICommandReceived(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo);
 
 		#if defined(INCLUDE_FROM_BOOTLOADER_MASSSTORAGE_C)
-			static void SetupHardware(void) AUX_BOOT_SECTION;
+			static void SetupHardware(void) ;
 		#endif
 
 #endif

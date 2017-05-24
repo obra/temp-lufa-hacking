@@ -41,7 +41,6 @@
 
 		#include <LUFA/Drivers/USB/USB.h>
 
-		#include "BootloaderAPI.h"
 
 	/* Macros: */
 		/** Endpoint address of the Mass Storage device-to-host data IN endpoint. */
@@ -82,7 +81,7 @@
 		uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 		                                    const uint16_t wIndex,
 		                                    const void** const DescriptorAddress)
-		                                    ATTR_WARN_UNUSED_RESULT ATTR_NON_NULL_PTR_ARG(3) AUX_BOOT_SECTION;
+		                                    ATTR_WARN_UNUSED_RESULT ATTR_NON_NULL_PTR_ARG(3);
 
 #endif
 

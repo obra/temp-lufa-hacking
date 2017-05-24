@@ -91,7 +91,7 @@ void Application_Jump_Check(void)
 		/* Check if the device's BOOTRST fuse is set */
 			/* If the reset source was not an external reset or the key is correct, clear it and jump to the application */
 		if (   
-			 (!(MCUSR & (1 << EXTRF)) || (MagicBootKey == MAGIC_BOOT_KEY))  ||
+			 (!(MCUSR & (1 << EXTRF)) || MagicBootKey == MAGIC_BOOT_KEY)  ||
 
 
 			/* If the reset source was the bootloader and the key is correct, clear it and jump to the application;
