@@ -11,9 +11,9 @@
 
 # Run "make help" for target help.
 
-MCU          = at90usb1287
+MCU          = atmega32u4
 ARCH         = AVR8
-BOARD        = USBKEY
+BOARD        = LEONARDO
 F_CPU        = 8000000
 F_USB        = $(F_CPU)
 OPTIMIZATION = s
@@ -26,8 +26,8 @@ LD_FLAGS     = -Wl,--section-start=.text=$(BOOT_START_OFFSET) $(BOOT_API_LD_FLAG
 # Flash size and bootloader section sizes of the target, in KB. These must
 # match the target's total FLASH size and the bootloader size set in the
 # device's fuses.
-FLASH_SIZE_KB         = 128
-BOOT_SECTION_SIZE_KB  = 8
+FLASH_SIZE_KB         = 32
+BOOT_SECTION_SIZE_KB  = 6
 
 # Bootloader address calculation formulas
 # Do not modify these macros, but rather modify the dependent values above.
@@ -45,7 +45,7 @@ BOOT_API_LD_FLAGS    += $(call BOOT_SECTION_LD_FLAG, .apitable_signatures,  Boot
 # Check if the bootloader needs an AUX section, located before the real bootloader section to store some of the
 # bootloader code. This is required for 32KB and smaller devices, where the actual bootloader is 6KB but the maximum
 # bootloader section size is 4KB. The actual usable application space will be reduced by 6KB for these devices.
-ifeq ($(BOOT_SECTION_SIZE_KB),8)
+ifeq ($(BOOT_SECTION_SIZE_KB),4)
   CC_FLAGS           += -DAUX_BOOT_SECTION_SIZE=0
 else
   AUX_BOOT_SECTION_SIZE_KB = (6 - $(BOOT_SECTION_SIZE_KB))

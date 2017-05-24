@@ -43,9 +43,6 @@
 		/** Size of the virtual FLASH.BIN file in bytes. */
 		#define FLASH_FILE_SIZE_BYTES     (FLASHEND - (FLASHEND - BOOT_START_ADDR) - AUX_BOOT_SECTION_SIZE)
 
-		/** Size of the virtual EEPROM.BIN file in bytes. */
-		#define EEPROM_FILE_SIZE_BYTES    E2END
-
 		/** Number of sectors that comprise a single logical disk cluster. */
 		#define SECTOR_PER_CLUSTER        4
 
@@ -72,7 +69,7 @@
 		#define FILE_CLUSTERS(size)       ((size / CLUSTER_SIZE_BYTES) + ((size % CLUSTER_SIZE_BYTES) ? 1 : 0))
 
 		/** Total number of logical sectors/blocks on the disk. */
-		#define LUN_MEDIA_BLOCKS          (FILE_SECTORS(FLASH_FILE_SIZE_BYTES) + FILE_SECTORS(EEPROM_FILE_SIZE_BYTES) + 32)
+		#define LUN_MEDIA_BLOCKS          (FILE_SECTORS(FLASH_FILE_SIZE_BYTES) +  32)
 
 		/** Converts a given time in HH:MM:SS format to a FAT filesystem time.
 		 *
@@ -164,10 +161,6 @@
 			DISK_FILE_ENTRY_FLASH_LFN     = 1,
 			/** Legacy MSDOS FAT file entry of the virtual FLASH.BIN image file. */
 			DISK_FILE_ENTRY_FLASH_MSDOS   = 2,
-			/** Long File Name FAT file entry of the virtual EEPROM.BIN image file. */
-			DISK_FILE_ENTRY_EEPROM_LFN    = 3,
-			/** Legacy MSDOS FAT file entry of the virtual EEPROM.BIN image file. */
-			DISK_FILE_ENTRY_EEPROM_MSDOS  = 4,
 		};
 
 		/** Enum for the physical disk blocks of the virtual disk. */
@@ -274,11 +267,6 @@
 
 	/* Function Prototypes: */
 		#if defined(INCLUDE_FROM_VIRTUAL_FAT_C)
-			static uint8_t ReadEEPROMByte(const uint8_t* const Address) ATTR_NO_INLINE;
-
-			static void WriteEEPROMByte(uint8_t* const Address,
-			                            const uint8_t Data) ATTR_NO_INLINE;
-
 			static void UpdateFAT12ClusterEntry(uint8_t* const FATTable,
 			                                    const uint16_t Index,
 			                                    const uint16_t ChainEntry) AUX_BOOT_SECTION;
@@ -288,12 +276,8 @@
 			                                    const uint8_t ChainLength) AUX_BOOT_SECTION;
 
 			static void ReadWriteFLASHFileBlock(const uint16_t BlockNumber,
-			                                    uint8_t* BlockBuffer,
-			                                    const bool Read) AUX_BOOT_SECTION;
+			                                    uint8_t* BlockBuffer) AUX_BOOT_SECTION;
 
-			static void ReadWriteEEPROMFileBlock(const uint16_t BlockNumber,
-			                                     uint8_t* BlockBuffer,
-			                                     const bool Read) AUX_BOOT_SECTION;
 		#endif
 
 		void VirtualFAT_WriteBlock(const uint16_t BlockNumber) AUX_BOOT_SECTION;

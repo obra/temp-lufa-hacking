@@ -105,23 +105,19 @@ bool SCSI_DecodeSCSICommand(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo)
 			CommandSuccess = SCSI_Command_Read_Capacity_10(MSInterfaceInfo);
 			break;
 		case SCSI_CMD_WRITE_10:
-			CommandSuccess = SCSI_Command_ReadWrite_10(MSInterfaceInfo, DATA_WRITE);
-			break;
-		case SCSI_CMD_READ_10:
-			CommandSuccess = SCSI_Command_ReadWrite_10(MSInterfaceInfo, DATA_READ);
+			CommandSuccess = SCSI_Command_ReadWrite_10(MSInterfaceInfo);
 			break;
 		case SCSI_CMD_MODE_SENSE_6:
 			CommandSuccess = SCSI_Command_ModeSense_6(MSInterfaceInfo);
 			break;
 		case SCSI_CMD_START_STOP_UNIT:
-#if !defined(NO_APP_START_ON_EJECT)
 			/* If the user ejected the volume, signal bootloader exit at next opportunity. */
 			RunBootloader = ((MSInterfaceInfo->State.CommandBlock.SCSICommandData[4] & 0x03) != 0x02);
-#endif
 		case SCSI_CMD_SEND_DIAGNOSTIC:
 		case SCSI_CMD_TEST_UNIT_READY:
 		case SCSI_CMD_PREVENT_ALLOW_MEDIUM_REMOVAL:
 		case SCSI_CMD_VERIFY_10:
+		case SCSI_CMD_READ_10:
 			/* These commands should just succeed, no handling required */
 			CommandSuccess = true;
 			MSInterfaceInfo->State.CommandBlock.DataTransferLength = 0;
@@ -154,7 +150,7 @@ bool SCSI_DecodeSCSICommand(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo)
  *
  *  \return Boolean \c true if the command completed successfully, \c false otherwise.
  */
-static bool SCSI_Command_Inquiry(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo)
+static  bool SCSI_Command_Inquiry(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo)
 {
 	uint16_t AllocationLength  = SwapEndian_16(*(uint16_t*)&MSInterfaceInfo->State.CommandBlock.SCSICommandData[3]);
 	uint16_t BytesTransferred  = MIN(AllocationLength, sizeof(InquiryData));
@@ -192,7 +188,7 @@ static bool SCSI_Command_Inquiry(USB_ClassInfo_MS_Device_t* const MSInterfaceInf
  *
  *  \return Boolean \c true if the command completed successfully, \c false otherwise.
  */
-static bool SCSI_Command_Request_Sense(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo)
+static  bool SCSI_Command_Request_Sense(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo)
 {
 	uint8_t AllocationLength = MSInterfaceInfo->State.CommandBlock.SCSICommandData[4];
 	uint8_t BytesTransferred = MIN(AllocationLength, sizeof(SenseData));
@@ -214,7 +210,7 @@ static bool SCSI_Command_Request_Sense(USB_ClassInfo_MS_Device_t* const MSInterf
  *
  *  \return Boolean \c true if the command completed successfully, \c false otherwise.
  */
-static bool SCSI_Command_Read_Capacity_10(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo)
+static   bool SCSI_Command_Read_Capacity_10(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo)
 {
 	Endpoint_Write_32_BE(LUN_MEDIA_BLOCKS - 1);
 	Endpoint_Write_32_BE(SECTOR_SIZE_BYTES);
@@ -235,8 +231,7 @@ static bool SCSI_Command_Read_Capacity_10(USB_ClassInfo_MS_Device_t* const MSInt
  *
  *  \return Boolean \c true if the command completed successfully, \c false otherwise.
  */
-static bool SCSI_Command_ReadWrite_10(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo,
-                                      const bool IsDataRead)
+static  bool SCSI_Command_ReadWrite_10(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo)
 {
 	uint16_t BlockAddress;
 	uint16_t TotalBlocks;
@@ -246,7 +241,7 @@ static bool SCSI_Command_ReadWrite_10(USB_ClassInfo_MS_Device_t* const MSInterfa
 
 	/* Load in the 16-bit total blocks (SCSI uses big-endian, so have to reverse the byte order) */
 	TotalBlocks  = SwapEndian_16(*(uint16_t*)&MSInterfaceInfo->State.CommandBlock.SCSICommandData[7]);
-
+#if 0
 	/* Check if the block address is outside the maximum allowable value for the LUN */
 	if (BlockAddress >= LUN_MEDIA_BLOCKS)
 	{
@@ -257,13 +252,10 @@ static bool SCSI_Command_ReadWrite_10(USB_ClassInfo_MS_Device_t* const MSInterfa
 
 		return false;
 	}
-
+#endif
 	/* Determine if the packet is a READ (10) or WRITE (10) command, call appropriate function */
-	for (uint16_t i = 0; i < TotalBlocks; i++)
+	for (auto i = 0; i < TotalBlocks; i++)
 	{
-		if (IsDataRead == DATA_READ)
-		  VirtualFAT_ReadBlock(BlockAddress + i);
-		else
 		  VirtualFAT_WriteBlock(BlockAddress + i);
 	}
 
@@ -280,7 +272,7 @@ static bool SCSI_Command_ReadWrite_10(USB_ClassInfo_MS_Device_t* const MSInterfa
  *
  *  \return Boolean \c true if the command completed successfully, \c false otherwise.
  */
-static bool SCSI_Command_ModeSense_6(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo)
+static  bool SCSI_Command_ModeSense_6(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo)
 {
 	/* Send an empty header response indicating Write Protect flag is off */
 	Endpoint_Write_32_LE(0);
