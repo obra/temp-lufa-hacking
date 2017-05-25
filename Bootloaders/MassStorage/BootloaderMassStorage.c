@@ -40,26 +40,25 @@
  *  passed to all Mass Storage Class driver functions, so that multiple instances of the same class
  *  within a device can be differentiated from one another.
  */
-USB_ClassInfo_MS_Device_t Disk_MS_Interface =
-	{
-		.Config =
-			{
-				.InterfaceNumber           = INTERFACE_ID_MassStorage,
-				.DataINEndpoint            =
-					{
-						.Address           = MASS_STORAGE_IN_EPADDR,
-						.Size              = MASS_STORAGE_IO_EPSIZE,
-						.Banks             = 1,
-					},
-				.DataOUTEndpoint           =
-					{
-						.Address           = MASS_STORAGE_OUT_EPADDR,
-						.Size              = MASS_STORAGE_IO_EPSIZE,
-						.Banks             = 1,
-					},
-				.TotalLUNs                 = 1,
-			},
-	};
+USB_ClassInfo_MS_Device_t Disk_MS_Interface = {
+    .Config =
+    {
+        .InterfaceNumber           = INTERFACE_ID_MassStorage,
+        .DataINEndpoint            =
+        {
+            .Address           = MASS_STORAGE_IN_EPADDR,
+            .Size              = MASS_STORAGE_IO_EPSIZE,
+            .Banks             = 1,
+        },
+        .DataOUTEndpoint           =
+        {
+            .Address           = MASS_STORAGE_OUT_EPADDR,
+            .Size              = MASS_STORAGE_IO_EPSIZE,
+            .Banks             = 1,
+        },
+        .TotalLUNs                 = 1,
+    },
+};
 
 /** Flag to indicate if the bootloader should be running, or should exit and allow the application code to run
  *  via a soft reset. When cleared, the bootloader will abort, the USB interface will shut down and the application
@@ -85,86 +84,82 @@ static uint8_t TicksSinceLastCommand = 0;
  *  start key has been loaded into \ref MagicBootKey. If the bootloader started via the watchdog and the key is valid,
  *  this will force the user application to start via a software jump.
  */
-void Application_Jump_Check(void)
-{
+void Application_Jump_Check(void) {
 
-		/* Check if the device's BOOTRST fuse is set */
-			/* If the reset source was not an external reset or the key is correct, clear it and jump to the application */
-		if (   
-			 (!(MCUSR & (1 << EXTRF)) || MagicBootKey == MAGIC_BOOT_KEY)  ||
-
-
-			/* If the reset source was the bootloader and the key is correct, clear it and jump to the application;
-			 * this can happen in the HWBE fuse is set, and the HBE pin is low during the watchdog reset */
-			 ((MCUSR & (1 << WDRF)) && (MagicBootKey == MAGIC_BOOT_KEY))) {
-
-			/* Clear reset source */
-			MCUSR =0;
+    /* Check if the device's BOOTRST fuse is set */
+    /* If the reset source was not an external reset or the key is correct, clear it and jump to the application */
+    if (
+        (!(MCUSR & (1 << EXTRF)) || MagicBootKey == MAGIC_BOOT_KEY)  ||
 
 
-		/* Turn off the watchdog */
-		wdt_disable();
+        /* If the reset source was the bootloader and the key is correct, clear it and jump to the application;
+         * this can happen in the HWBE fuse is set, and the HBE pin is low during the watchdog reset */
+        ((MCUSR & (1 << WDRF)) && (MagicBootKey == MAGIC_BOOT_KEY))) {
 
-		/* Clear the boot key and jump to the user application */
-		MagicBootKey = 0;
+        /* Clear reset source */
+        MCUSR =0;
 
-		// cppcheck-suppress constStatement
-		((void (*)(void))0x0000)();
-	}
+
+        /* Turn off the watchdog */
+        wdt_disable();
+
+        /* Clear the boot key and jump to the user application */
+        MagicBootKey = 0;
+
+        // cppcheck-suppress constStatement
+        ((void (*)(void))0x0000)();
+    }
 }
 
 /** Main program entry point. This routine configures the hardware required by the application, then
  *  enters a loop to run the application tasks in sequence.
  */
-int main(void)
-{
-	SetupHardware();
+int main(void) {
+    SetupHardware();
 
-	//LEDs_SetAllLEDs(LEDMASK_USB_NOTREADY);
-	GlobalInterruptEnable();
+    //LEDs_SetAllLEDs(LEDMASK_USB_NOTREADY);
+    GlobalInterruptEnable();
 
-	while (RunBootloader || TicksSinceLastCommand++ < 0xFF)
-	{
-		MS_Device_USBTask(&Disk_MS_Interface);
-		USB_USBTask();
-	}
+    while (RunBootloader || TicksSinceLastCommand++ < 0xFF) {
+        MS_Device_USBTask(&Disk_MS_Interface);
+        USB_USBTask();
+    }
 
-	/* Disconnect from the host - USB interface will be reset later along with the AVR */
-	USB_Detach();
+    /* Disconnect from the host - USB interface will be reset later along with the AVR */
+    USB_Detach();
 
-	/* Unlock the forced application start mode of the bootloader if it is restarted */
-	MagicBootKey = MAGIC_BOOT_KEY;
+    /* Unlock the forced application start mode of the bootloader if it is restarted */
+    MagicBootKey = MAGIC_BOOT_KEY;
 
-	/* Enable the watchdog and force a timeout to reset the AVR */
-	wdt_enable(WDTO_250MS);
+    /* Enable the watchdog and force a timeout to reset the AVR */
+    wdt_enable(WDTO_250MS);
 
-	for (;;);
+    for (;;);
 }
 
 /** Configures the board hardware and chip peripherals for the demo's functionality. */
-static void SetupHardware(void)
-{
-	/* Disable watchdog if enabled by bootloader/fuses */
-	wdt_disable();
+static void SetupHardware(void) {
+    /* Disable watchdog if enabled by bootloader/fuses */
+    wdt_disable();
 
-	/* Disable clock division */
+    /* Disable clock division */
 //	clock_prescale_set(clock_div_1);
 
-	/* Relocate the interrupt vector table to the bootloader section */
-	MCUCR = (1 << IVCE);
-	MCUCR = (1 << IVSEL);
+    /* Relocate the interrupt vector table to the bootloader section */
+    MCUCR = (1 << IVCE);
+    MCUCR = (1 << IVSEL);
 
-	/* Hardware Initialization */
-	//LEDs_Init();
-	USB_Init();
+    /* Hardware Initialization */
+    //LEDs_Init();
+    USB_Init();
 
-	/* Bootloader active LED toggle timer initialization */
-	//TIMSK1 = (1 << TOIE1);
-	//TCCR1B = ((1 << CS11) | (1 << CS10));
+    /* Bootloader active LED toggle timer initialization */
+    //TIMSK1 = (1 << TOIE1);
+    //TCCR1B = ((1 << CS11) | (1 << CS10));
 }
 
 /** ISR to periodically toggle the LEDs on the board to indicate that the bootloader is active. */
-// ISR(TIMER1_OVF_vect, ISR_BLOCK) { LEDs_ToggleLEDs(LEDS_LED1 | LEDS_LED2); } 
+// ISR(TIMER1_OVF_vect, ISR_BLOCK) { LEDs_ToggleLEDs(LEDS_LED1 | LEDS_LED2); }
 /** Event handler for the USB_Connect event. This indicates that the device is enumerating via the status LEDs. */
 //inline void EVENT_USB_Device_Connect(void)
 //{
@@ -182,26 +177,23 @@ static void SetupHardware(void)
 //}
 
 /** Event handler for the library USB Configuration Changed event. */
-inline void EVENT_USB_Device_ConfigurationChanged(void)
-{
+inline void EVENT_USB_Device_ConfigurationChanged(void) {
 
-	/* Setup Mass Storage Data Endpoints */
-	MS_Device_ConfigureEndpoints(&Disk_MS_Interface);
+    /* Setup Mass Storage Data Endpoints */
+    MS_Device_ConfigureEndpoints(&Disk_MS_Interface);
 }
 
 /** Event handler for the library USB Control Request reception event. */
-void EVENT_USB_Device_ControlRequest(void)
-{
-	MS_Device_ProcessControlRequest(&Disk_MS_Interface);
+void EVENT_USB_Device_ControlRequest(void) {
+    MS_Device_ProcessControlRequest(&Disk_MS_Interface);
 }
 
 /** Mass Storage class driver callback function the reception of SCSI commands from the host, which must be processed.
  *
  *  \param[in] MSInterfaceInfo  Pointer to the Mass Storage class interface configuration structure being referenced
  */
-bool CALLBACK_MS_Device_SCSICommandReceived(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo)
-{
-	TicksSinceLastCommand = 0;
-	/* Signal that a command was processed, must not exit bootloader yet */
-	return SCSI_DecodeSCSICommand(MSInterfaceInfo);
+bool CALLBACK_MS_Device_SCSICommandReceived(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo) {
+    TicksSinceLastCommand = 0;
+    /* Signal that a command was processed, must not exit bootloader yet */
+    return SCSI_DecodeSCSICommand(MSInterfaceInfo);
 }

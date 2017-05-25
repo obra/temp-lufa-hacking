@@ -36,48 +36,48 @@
 #ifndef _BOOTLOADER_MASS_STORAGE_H_
 #define _BOOTLOADER_MASS_STORAGE_H_
 
-	/* Includes: */
-		#include <avr/io.h>
-		#include <avr/wdt.h>
-		#include <avr/power.h>
-		#include <avr/interrupt.h>
-		#include <string.h>
+/* Includes: */
+#include <avr/io.h>
+#include <avr/wdt.h>
+#include <avr/power.h>
+#include <avr/interrupt.h>
+#include <string.h>
 
-		#include "Descriptors.h"
-		#include "Config/AppConfig.h"
+#include "Descriptors.h"
+#include "Config/AppConfig.h"
 
-		#include "Lib/SCSI.h"
+#include "Lib/SCSI.h"
 
-		#include <LUFA/Drivers/Board/LEDs.h>
-		#include <LUFA/Drivers/USB/USB.h>
-		#include <LUFA/Platform/Platform.h>
+#include <LUFA/Drivers/Board/LEDs.h>
+#include <LUFA/Drivers/USB/USB.h>
+#include <LUFA/Platform/Platform.h>
 
-	/* Preprocessor Checks: */
-		#if !defined(__OPTIMIZE_SIZE__)
+/* Preprocessor Checks: */
+#if !defined(__OPTIMIZE_SIZE__)
 //			#error This bootloader requires that it be optimized for size, not speed, to fit into the target device. Change optimization settings and try again.
-		#endif
+#endif
 
-		/** Magic bootloader key to unlock forced application start mode. */
-		#define MAGIC_BOOT_KEY             0xDC42
+/** Magic bootloader key to unlock forced application start mode. */
+#define MAGIC_BOOT_KEY             0xDC42
 
-	/* Global Variables: */
-		extern bool RunBootloader;
+/* Global Variables: */
+extern bool RunBootloader;
 
-	/* Function Prototypes: */
-		int main(void);
+/* Function Prototypes: */
+int main(void);
 
-		void Application_Jump_Check(void) ATTR_INIT_SECTION(3);
+void Application_Jump_Check(void) ATTR_INIT_SECTION(3);
 
-		void EVENT_USB_Device_Connect(void);
-		void EVENT_USB_Device_Disconnect(void);
-		void EVENT_USB_Device_ConfigurationChanged(void);
-		void EVENT_USB_Device_ControlRequest(void);
+void EVENT_USB_Device_Connect(void);
+void EVENT_USB_Device_Disconnect(void);
+void EVENT_USB_Device_ConfigurationChanged(void);
+void EVENT_USB_Device_ControlRequest(void);
 
-		bool CALLBACK_MS_Device_SCSICommandReceived(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo);
+bool CALLBACK_MS_Device_SCSICommandReceived(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo);
 
-		#if defined(INCLUDE_FROM_BOOTLOADER_MASSSTORAGE_C)
-			static void SetupHardware(void) ;
-		#endif
+#if defined(INCLUDE_FROM_BOOTLOADER_MASSSTORAGE_C)
+static void SetupHardware(void) ;
+#endif
 
 #endif
 

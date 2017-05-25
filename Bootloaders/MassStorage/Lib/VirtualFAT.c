@@ -48,97 +48,95 @@
  *        must be added to the very end of the block to identify it as a boot
  *        block.
  */
-static const FATBootBlock_t BootBlock =
-	{
-		.Bootstrap               = {0xEB, 0x3C, 0x90},
-		.Description             = "mkdosfs",
-		.SectorSize              = SECTOR_SIZE_BYTES,
-		.SectorsPerCluster       = SECTOR_PER_CLUSTER,
-		.ReservedSectors         = 1,
-		.FATCopies               = 2,
-		.RootDirectoryEntries    = (SECTOR_SIZE_BYTES / sizeof(FATDirectoryEntry_t)),
-		.TotalSectors16          = LUN_MEDIA_BLOCKS,
-		.MediaDescriptor         = 0xF8,
-		.SectorsPerFAT           = 1,
-		.SectorsPerTrack         = (LUN_MEDIA_BLOCKS % 64),
-		.Heads                   = (LUN_MEDIA_BLOCKS / 64),
-		.HiddenSectors           = 0,
-		.TotalSectors32          = 0,
-		.PhysicalDriveNum        = 0,
-		.ExtendedBootRecordSig   = 0x29,
-		.VolumeSerialNumber      = 0x12345678,
-		.VolumeLabel             = "LUFA BOOT  ",
-		.FilesystemIdentifier    = "FAT12   ",
-	};
+static const FATBootBlock_t BootBlock = {
+    .Bootstrap               = {0xEB, 0x3C, 0x90},
+    .Description             = "mkdosfs",
+    .SectorSize              = SECTOR_SIZE_BYTES,
+    .SectorsPerCluster       = SECTOR_PER_CLUSTER,
+    .ReservedSectors         = 1,
+    .FATCopies               = 2,
+    .RootDirectoryEntries    = (SECTOR_SIZE_BYTES / sizeof(FATDirectoryEntry_t)),
+    .TotalSectors16          = LUN_MEDIA_BLOCKS,
+    .MediaDescriptor         = 0xF8,
+    .SectorsPerFAT           = 1,
+    .SectorsPerTrack         = (LUN_MEDIA_BLOCKS % 64),
+    .Heads                   = (LUN_MEDIA_BLOCKS / 64),
+    .HiddenSectors           = 0,
+    .TotalSectors32          = 0,
+    .PhysicalDriveNum        = 0,
+    .ExtendedBootRecordSig   = 0x29,
+    .VolumeSerialNumber      = 0x12345678,
+    .VolumeLabel             = "LUFA BOOT  ",
+    .FilesystemIdentifier    = "FAT12   ",
+};
 
 /** FAT 8.3 style directory entry, for the virtual FLASH contents file. */
-static FATDirectoryEntry_t FirmwareFileEntries[] =
-	{
-		/* Root volume label entry; disk label is contained in the Filename and
-		 * Extension fields (concatenated) with a special attribute flag - other
-		 * fields are ignored. Should be the same as the label in the boot block.
-		 */
-		[DISK_FILE_ENTRY_VolumeID] =
-		{
-			.MSDOS_Directory =
-				{
-					.Name            = "LUFA BOOT  ",
-					.Attributes      = FAT_FLAG_VOLUME_NAME,
-					.Reserved        = {0},
-					.CreationTime    = 0,
-					.CreationDate    = 0,
-					.StartingCluster = 0,
-					.Reserved2       = 0,
-				}
-		},
+static FATDirectoryEntry_t FirmwareFileEntries[] = {
+    /* Root volume label entry; disk label is contained in the Filename and
+     * Extension fields (concatenated) with a special attribute flag - other
+     * fields are ignored. Should be the same as the label in the boot block.
+     */
+    [DISK_FILE_ENTRY_VolumeID] =
+    {
+        .MSDOS_Directory =
+        {
+            .Name            = "LUFA BOOT  ",
+            .Attributes      = FAT_FLAG_VOLUME_NAME,
+            .Reserved        = {0},
+            .CreationTime    = 0,
+            .CreationDate    = 0,
+            .StartingCluster = 0,
+            .Reserved2       = 0,
+        }
+    },
 
-		/* VFAT Long File Name entry for the virtual firmware file; required to
-		 * prevent corruption from systems that are unable to detect the device
-		 * as being a legacy MSDOS style FAT12 volume. */
-		[DISK_FILE_ENTRY_FLASH_LFN] =
-		{
-			.VFAT_LongFileName =
-				{
-					.Ordinal         = 1 | FAT_ORDINAL_LAST_ENTRY,
-					.Attribute       = FAT_FLAG_LONG_FILE_NAME,
-					.Reserved1       = 0,
-					.Reserved2       = 0,
+    /* VFAT Long File Name entry for the virtual firmware file; required to
+     * prevent corruption from systems that are unable to detect the device
+     * as being a legacy MSDOS style FAT12 volume. */
+    [DISK_FILE_ENTRY_FLASH_LFN] =
+    {
+        .VFAT_LongFileName =
+        {
+            .Ordinal         = 1 | FAT_ORDINAL_LAST_ENTRY,
+            .Attribute       = FAT_FLAG_LONG_FILE_NAME,
+            .Reserved1       = 0,
+            .Reserved2       = 0,
 
-					.Checksum        = FAT_CHECKSUM('F','L','A','S','H',' ',' ',' ','B','I','N'),
+            .Checksum        = FAT_CHECKSUM('F','L','A','S','H',' ',' ',' ','B','I','N'),
 
-					.Unicode1        = 'F',
-					.Unicode2        = 'L',
-					.Unicode3        = 'A',
-					.Unicode4        = 'S',
-					.Unicode5        = 'H',
-					.Unicode6        = '.',
-					.Unicode7        = 'B',
-					.Unicode8        = 'I',
-					.Unicode9        = 'N',
-					.Unicode10       = 0,
-					.Unicode11       = 0,
-					.Unicode12       = 0,
-					.Unicode13       = 0,
-				}
-		},
+            .Unicode1        = 'F',
+            .Unicode2        = 'L',
+            .Unicode3        = 'A',
+            .Unicode4        = 'S',
+            .Unicode5        = 'H',
+            .Unicode6        = '.',
+            .Unicode7        = 'B',
+            .Unicode8        = 'I',
+            .Unicode9        = 'N',
+            .Unicode10       = 0,
+            .Unicode11       = 0,
+            .Unicode12       = 0,
+            .Unicode13       = 0,
+        }
+    },
 
-		/* MSDOS file entry for the virtual Firmware image. */
-		[DISK_FILE_ENTRY_FLASH_MSDOS] =
-		{
-			.MSDOS_File =
-				{
-					.Filename        = "FLASH   ",
-					.Extension       = "BIN",
-					.Attributes      = 0,
-					.Reserved        = {0},
-					.CreationTime    = FAT_TIME(1, 1, 0),
-					.CreationDate    = FAT_DATE(14, 2, 1989),
-					.StartingCluster = 2,
-					.FileSizeBytes   = FLASH_FILE_SIZE_BYTES,
-				}
-		},
+    /* MSDOS file entry for the virtual Firmware image. */
+    [DISK_FILE_ENTRY_FLASH_MSDOS] =
+    {
+        .MSDOS_File =
+        {
+            .Filename        = "FLASH   ",
+            .Extension       = "BIN",
+            .Attributes      = 0,
+            .Reserved        = {0},
+            .CreationTime    = FAT_TIME(1, 1, 0),
+            .CreationDate    = FAT_DATE(14, 2, 1989),
+            .StartingCluster = 2,
+            .FileSizeBytes   = FLASH_FILE_SIZE_BYTES,
+        }
+    },
 
-	};
+};
 
 /** Starting cluster of the virtual FLASH.BIN file on disk, tracked so that the
  *  offset from the start of the data sector can be determined. On Windows
@@ -161,24 +159,20 @@ static const uint16_t* FLASHFileStartCluster  = &FirmwareFileEntries[DISK_FILE_E
  */
 static void UpdateFAT12ClusterEntry(uint8_t* const FATTable,
                                     const uint16_t Index,
-                                    const uint16_t ChainEntry)
-{
-	/* Calculate the starting offset of the cluster entry in the FAT12 table */
-	uint8_t FATOffset   = (Index + (Index >> 1));
-	bool    UpperNibble = ((Index & 1) != 0);
+                                    const uint16_t ChainEntry) {
+    /* Calculate the starting offset of the cluster entry in the FAT12 table */
+    uint8_t FATOffset   = (Index + (Index >> 1));
+    bool    UpperNibble = ((Index & 1) != 0);
 
-	/* Check if the start of the entry is at an upper nibble of the byte, fill
-	 * out FAT12 entry as required */
-	if (UpperNibble)
-	{
-		FATTable[FATOffset]     = (FATTable[FATOffset] & 0x0F) | ((ChainEntry & 0x0F) << 4);
-		FATTable[FATOffset + 1] = (ChainEntry >> 4);
-	}
-	else
-	{
-		FATTable[FATOffset]     = ChainEntry;
-		FATTable[FATOffset + 1] = (FATTable[FATOffset] & 0xF0) | (ChainEntry >> 8);
-	}
+    /* Check if the start of the entry is at an upper nibble of the byte, fill
+     * out FAT12 entry as required */
+    if (UpperNibble) {
+        FATTable[FATOffset]     = (FATTable[FATOffset] & 0x0F) | ((ChainEntry & 0x0F) << 4);
+        FATTable[FATOffset + 1] = (ChainEntry >> 4);
+    } else {
+        FATTable[FATOffset]     = ChainEntry;
+        FATTable[FATOffset + 1] = (FATTable[FATOffset] & 0xF0) | (ChainEntry >> 8);
+    }
 }
 
 /** Updates a FAT12 cluster chain in the FAT file table with a linear chain of
@@ -193,19 +187,17 @@ static void UpdateFAT12ClusterEntry(uint8_t* const FATTable,
  */
 static void UpdateFAT12ClusterChain(uint8_t* const FATTable,
                                     const uint16_t Index,
-                                    const uint8_t ChainLength)
-{
-	for (uint8_t i = 0; i < ChainLength; i++)
-	{
-		uint16_t CurrentCluster = Index + i;
-		uint16_t NextCluster    = CurrentCluster + 1;
+                                    const uint8_t ChainLength) {
+    for (uint8_t i = 0; i < ChainLength; i++) {
+        uint16_t CurrentCluster = Index + i;
+        uint16_t NextCluster    = CurrentCluster + 1;
 
-		/* Mark last cluster as end of file */
-		if (i == (ChainLength - 1))
-		  NextCluster = 0xFFF;
+        /* Mark last cluster as end of file */
+        if (i == (ChainLength - 1))
+            NextCluster = 0xFFF;
 
-		UpdateFAT12ClusterEntry(FATTable, CurrentCluster, NextCluster);
-	}
+        UpdateFAT12ClusterEntry(FATTable, CurrentCluster, NextCluster);
+    }
 }
 
 /** Reads or writes a block of data from/to the physical device FLASH using a
@@ -218,51 +210,44 @@ static void UpdateFAT12ClusterChain(uint8_t* const FATTable,
  *                               \c false, the requested block is written
  */
 static void ReadWriteFLASHFileBlock(const uint16_t BlockNumber,
-                                    uint8_t* BlockBuffer)
-{
-	uint16_t FileStartBlock = DISK_BLOCK_DataStartBlock + (*FLASHFileStartCluster - 2) * SECTOR_PER_CLUSTER;
-	uint16_t FileEndBlock   = FileStartBlock + (FILE_SECTORS(FLASH_FILE_SIZE_BYTES) - 1);
+                                    uint8_t* BlockBuffer) {
+    uint16_t FileStartBlock = DISK_BLOCK_DataStartBlock + (*FLASHFileStartCluster - 2) * SECTOR_PER_CLUSTER;
+    uint16_t FileEndBlock   = FileStartBlock + (FILE_SECTORS(FLASH_FILE_SIZE_BYTES) - 1);
 
-	/* Range check the write request - abort if requested block is not within the
-	 * virtual firmware file sector range */
+    /* Range check the write request - abort if requested block is not within the
+     * virtual firmware file sector range */
 // Disabled for space
 //	if (!((BlockNumber >= FileStartBlock) && (BlockNumber <= FileEndBlock)))
 //	  return;
 
-	#if (FLASHEND > 0xFFFF)
-	uint32_t FlashAddress = (uint32_t)(BlockNumber - FileStartBlock) * SECTOR_SIZE_BYTES;
-	#else
-	uint16_t FlashAddress = (uint16_t)(BlockNumber - FileStartBlock) * SECTOR_SIZE_BYTES;
-	#endif
+#if (FLASHEND > 0xFFFF)
+    uint32_t FlashAddress = (uint32_t)(BlockNumber - FileStartBlock) * SECTOR_SIZE_BYTES;
+#else
+    uint16_t FlashAddress = (uint16_t)(BlockNumber - FileStartBlock) * SECTOR_SIZE_BYTES;
+#endif
 
-		/* Write out the mapped block of data to the device's FLASH */
-		for (uint16_t i = 0; i < SECTOR_SIZE_BYTES; i += 2)
-		{
-			if ((FlashAddress % SPM_PAGESIZE) == 0)
-			{
-				/* Erase the given FLASH page, ready to be programmed */
-				   //     boot_page_erase(FlashAddress);
-					        //boot_spm_busy_wait();
-        boot_page_erase(FlashAddress);
-	        boot_spm_busy_wait();
+    /* Write out the mapped block of data to the device's FLASH */
+    for (uint16_t i = 0; i < SECTOR_SIZE_BYTES; i += 2) {
+        if ((FlashAddress % SPM_PAGESIZE) == 0) {
+            boot_page_erase(FlashAddress);
+            boot_spm_busy_wait();
 
-			}
+        }
 
-			/* Write the next data word to the FLASH page */
-			        boot_page_fill_safe(FlashAddress, (BlockBuffer[i + 1] << 8) | BlockBuffer[i]);
-			FlashAddress += 2;
+        /* Write the next data word to the FLASH page */
+        boot_page_fill_safe(FlashAddress, (BlockBuffer[i + 1] << 8) | BlockBuffer[i]);
+        FlashAddress += 2;
 
-			if ((FlashAddress % SPM_PAGESIZE) == 0)
-			{
-				/* Write the filled FLASH page to memory */
-				        boot_page_write(FlashAddress-SPM_PAGESIZE);
-					        boot_spm_busy_wait();
+        if ((FlashAddress % SPM_PAGESIZE) == 0) {
+            /* Write the filled FLASH page to memory */
+            boot_page_write(FlashAddress-SPM_PAGESIZE);
+            boot_spm_busy_wait();
 
-					//        boot_spm_busy_wait();
+            //        boot_spm_busy_wait();
 
-			}
-		}
-		boot_rww_enable();
+        }
+    }
+    boot_rww_enable();
 }
 
 
@@ -271,32 +256,30 @@ static void ReadWriteFLASHFileBlock(const uint16_t BlockNumber,
  *
  *  \param[in]  BlockNumber  Index of the block to write.
  */
-void VirtualFAT_WriteBlock(const uint16_t BlockNumber)
-{
-	uint8_t BlockBuffer[SECTOR_SIZE_BYTES];
+void VirtualFAT_WriteBlock(const uint16_t BlockNumber) {
+    uint8_t BlockBuffer[SECTOR_SIZE_BYTES];
 
-	/* Buffer the entire block to be written from the host */
-	Endpoint_Read_Stream_LE(BlockBuffer, sizeof(BlockBuffer), NULL);
-	Endpoint_ClearOUT();
+    /* Buffer the entire block to be written from the host */
+    Endpoint_Read_Stream_LE(BlockBuffer, sizeof(BlockBuffer), NULL);
+    Endpoint_ClearOUT();
 
-	switch (BlockNumber)
-	{
-		case DISK_BLOCK_BootBlock:
-		case DISK_BLOCK_FATBlock1:
-		case DISK_BLOCK_FATBlock2:
-			/* Ignore writes to the boot and FAT blocks */
+    switch (BlockNumber) {
+    case DISK_BLOCK_BootBlock:
+    case DISK_BLOCK_FATBlock1:
+    case DISK_BLOCK_FATBlock2:
+        /* Ignore writes to the boot and FAT blocks */
 
-			break;
+        break;
 
-		case DISK_BLOCK_RootFilesBlock:
-			/* Copy over the updated directory entries */
-			memcpy(FirmwareFileEntries, BlockBuffer, sizeof(FirmwareFileEntries));
+    case DISK_BLOCK_RootFilesBlock:
+        /* Copy over the updated directory entries */
+        memcpy(FirmwareFileEntries, BlockBuffer, sizeof(FirmwareFileEntries));
 
-			break;
+        break;
 
-		default:
-			ReadWriteFLASHFileBlock(BlockNumber, BlockBuffer);
+    default:
+        ReadWriteFLASHFileBlock(BlockNumber, BlockBuffer);
 
-			break;
-	}
+        break;
+    }
 }
